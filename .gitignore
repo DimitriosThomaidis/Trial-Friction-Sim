@@ -1,0 +1,10 @@
+﻿.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+workspace/
+gdrive_fallback/
+temp_cache/
+.DS_Store
+*.env
