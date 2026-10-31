@@ -1,16 +1,16 @@
 ﻿# Trial-Friction-Sim: Clinical Trial SoA Burden & Competing-Risks Dropout Simulator
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-2563eb.svg)](https://www.python.org/)
-[![Local Hardware](https://img.shields.io/badge/VRAM_Budget-%E2%89%A48GB_Local_GPU_Airlock-059669.svg)](#hardware-discipline--8-gb-vram-gpu-airlock)
-[![Regulatory Alignment](https://img.shields.io/badge/Standards-FDA_%26_EMA_ICH_E6(R3)_%7C_ICH_M11_%7C_CDISC_USDM_v4.1-7c3aed.svg)](#regulatory-alignment-us-fda--eu-ema-20252026)
+[![Local Hardware](https://img.shields.io/badge/VRAM_Budget-%3C%3D8GB_Local_GPU_Airlock-059669.svg)](#hardware-discipline--8-gb-vram-gpu-airlock)
+[![Regulatory Alignment](https://img.shields.io/badge/Standards-FDA_%26_EMA_ICH_E6(R3)_%7C_ICH_M11_%7C_CDISC_USDM_v4.1-7c3aed.svg)](#regulatory-alignment-us-fda--eu-ema-2025-2026)
 [![Real-World Benchmark](https://img.shields.io/badge/Validated_Cohort-60_Real_ClinicalTrials.gov_PDFs_(2.60%25_MAE)-d97706.svg)](#empirical-validation--60-trial-real-world-benchmark)
 [![Macro Calibration](https://img.shields.io/badge/Macro_Calibration-38%2C302_Real_Trials_(DuckDB)-0891b2.svg)](#tier-1-macro-calibration-on-38302-historical-trials)
-[![Multilingual Parity](https://img.shields.io/badge/Multilingual-26_US_%2F_EU_%2F_Global_Languages-dc2626.svg)](#tier-4-26-language-useuglobal-stress-test)
+[![Multilingual Parity](https://img.shields.io/badge/Multilingual-26_US_%2F_EU_%2F_Global_Languages-dc2626.svg)](#tier-4-26-language-useuglobal-stress-test-100-parity)
 
 **Trial-Friction-Sim** is a 100% local, privacy-preserving, 6-box clinical trial protocol intelligence and competing-risks patient retention simulator engineered to run within an **8 GB VRAM consumer GPU envelope**. Given any raw Sponsor Protocol PDF (from 2-page summaries to 483-page multi-epoch Phase III documents), the pipeline:
 
 1. **Isolates** the Schedule of Assessments (SoA) pages on CPU (`0.0 GB` VRAM) via topological grid scoring (`Box 1`),
-2. **Extracts & fuses** multi-page and split-epoch SoA tables via a self-healing tri-modal tournament (`Path A` deterministic vector grid $\rightarrow$ `Path B` local `qwen3.5:4b` VLM OCR $\rightarrow$ `Path C` prose synthesis) with a **3-Tier Epistemic Readiness & Selective Abstention Gate** (`Box 2`),
+2. **Extracts & fuses** multi-page and split-epoch SoA tables via a self-healing tri-modal tournament (`Path A` deterministic vector grid -> `Path B` local `qwen3.5:4b` VLM OCR -> `Path C` prose synthesis) with a **3-Tier Epistemic Readiness & Selective Abstention Gate** (`Box 2`),
 3. **Normalizes** complex visit headers and clinical procedures across **26 languages** into **CDISC USDM v4.1**, **ICH M11 CeSHarP**, **LOINC v2.78**, and **SNOMED-CT** Biomedical Concepts using a two-tier deterministic + self-learning local LLM normalizer (`Box 3`),
 4. **Quantifies** 5-dimensional patient friction, log-subadditive intra-concept assessment stacking, and estimated site cost per calendar visit (`Box 4`),
 5. **Simulates** 1,000 virtual patient-caregiver dyads week-by-week under competing risks (*Modifiable Logistical/Pain Burden Dropout* vs. *Unavoidable Adverse Event Dropout*), anchored by **38,302 real completed clinical trials** via zero-copy `DuckDB` SQL (`Box 5`), and
@@ -23,7 +23,7 @@
 - [Why Trial-Friction-Sim? (The Clinical Problem)](#why-trial-friction-sim-the-clinical-problem)
 - [Scientific Literature & Theoretical Foundations](#scientific-literature--theoretical-foundations)
 - [Key Architectural Innovations](#key-architectural-innovations)
-- [6-Box System Architecture & Data Flow](#6-box-system-architecture--data-flow)
+- [6-Box System Architecture & Data Flow (Mermaid Diagrams)](#6-box-system-architecture--data-flow-mermaid-diagrams)
 - [Mathematical Formulation (Boxes 4, 5 & 6)](#mathematical-formulation-boxes-4-5--6)
 - [Interactive Streamlit Studio: Step-by-Step User Manual](#interactive-streamlit-studio-step-by-step-user-manual)
 - [Empirical Validation & 60-Trial Real-World Benchmark](#empirical-validation--60-trial-real-world-benchmark)
@@ -33,7 +33,7 @@
   - [Tier 3: 20-Trial Out-of-Sample Blind Holdout Benchmark (`2.88%` MAE)](#tier-3-20-trial-out-of-sample-blind-holdout-benchmark-288-mae)
   - [Tier 4: 26-Language US/EU/Global Stress Test (`100%` Parity)](#tier-4-26-language-useuglobal-stress-test-100-parity)
 - [Patient Safety, Epistemic Humility & Human-in-the-Loop Guardrails](#patient-safety-epistemic-humility--human-in-the-loop-guardrails)
-- [Regulatory Alignment (US FDA & EU EMA 2025β€“2026)](#regulatory-alignment-us-fda--eu-ema-20252026)
+- [Regulatory Alignment (US FDA & EU EMA 2025-2026)](#regulatory-alignment-us-fda--eu-ema-2025-2026)
 - [Repository Structure](#repository-structure)
 - [Installation, Hardware Requirements & Quickstart](#installation-hardware-requirements--quickstart)
 
@@ -41,7 +41,7 @@
 
 ## Why Trial-Friction-Sim? (The Clinical Problem)
 
-Across global Phase II and Phase III clinical trials, **~30% of enrolled participants drop out prior to study completion**, and **57% to 76% of protocols require at least one substantial protocol amendment**β€”costing sponsors **$141,000 (Phase II) to $535,000 (Phase III)** in direct implementation fees and adding **130 to 260 days** of operational delay.
+Across global Phase II and Phase III clinical trials, **~30% of enrolled participants drop out prior to study completion**, and **57% to 76% of protocols require at least one substantial protocol amendment** -- costing sponsors **$141,000 (Phase II) to $535,000 (Phase III)** in direct implementation fees and adding **130 to 260 days** of operational delay.
 
 Existing clinical trial AI benchmarks operate on high-level registry metadata (study phase, disease keyword, target enrollment size) while ignoring the primary operational driver of preventable participant attrition: **the week-by-week Schedule of Assessments (SoA) table locked inside 100-to-480 page Sponsor Protocol PDFs**. When a protocol stacks a 4.5-hour serial pharmacokinetic (PK) draw, a contrast MRI, an exploratory lumbar puncture or tissue biopsy, and 90 minutes of psychiatric/PRO questionnaires into the same visit week, employed patients and caregivers drop out from logistical and biophysical exhaustion.
 
@@ -53,17 +53,17 @@ Existing clinical trial AI benchmarks operate on high-level registry metadata (s
 
 Every mathematical equation, burden weight, and macro-calibration prior in `Trial-Friction-Sim` is grounded in peer-reviewed clinical trial research and biostatistical literature:
 
-1. **Multi-Modal Clinical Trial Attrition Benchmarks (`Box 5A` β€” 38,302-Trial DuckDB Calibration):**
+1. **Multi-Modal Clinical Trial Attrition Benchmarks (`Box 5A` -- 38,302-Trial DuckDB Calibration):**
    - **Paper:** Chen, J., Hu, Y., Gao, C., Fu, T., Sun, J., *et al.* (2025). *"TrialBench: Multi-Modal AI-Ready Datasets for Clinical Trial Prediction."* **Scientific Data (Nature Portfolio)**, 12, 1564. [https://doi.org/10.1038/s41597-025-05680-8](https://doi.org/10.1038/s41597-025-05680-8) (`arXiv:2407.00631`).
    - **Application in Repo:** `aact_duckdb_loader.py` streams the `38,302` curated real-world clinical trial dropout records (`trialbench-patient-dropout`) via zero-copy `DuckDB` SQL to calibrate phase-specific and domain-specific baseline dropout hazards.
 2. **Time Toxicity & Clinic Chair-Hour Burden (`Box 4` & `Box 6`):**
-   - **Paper:** Gupta, A., Jensen, E. H., Virnig, B. A., & Booth, C. M. (2022). *"The 'Time Toxicity' of Cancer Treatment."* **Journal of Clinical Oncology (JCO)**, 40(15), 1611β€“1615. [https://doi.org/10.1200/JCO.21.02810](https://doi.org/10.1200/JCO.21.02810).
-   - **Application in Repo:** `scorer.py` and `survival_sim.py` explicitly model **Time Toxicity**β€”quantifying overlap-adjusted clinic chair hours $H(w)$ plus round-trip patient commute hours $T_i(w)$ relative to employment inflexibility $J_i$.
+   - **Paper:** Gupta, A., Jensen, E. H., Virnig, B. A., & Booth, C. M. (2022). *"The 'Time Toxicity' of Cancer Treatment."* **Journal of Clinical Oncology (JCO)**, 40(15), 1611-1615. [https://doi.org/10.1200/JCO.21.02810](https://doi.org/10.1200/JCO.21.02810).
+   - **Application in Repo:** `scorer.py` and `survival_sim.py` explicitly model **Time Toxicity** -- quantifying overlap-adjusted clinic chair hours $H(w)$ plus round-trip patient commute hours $T_i(w)$ relative to employment inflexibility $J_i$.
 3. **Protocol Complexity, Patient Burden & Substantial Amendment Cost (`Box 4` & `Box 6`):**
-   - **Paper:** Getz, K. A., Stergiopoulos, S., Short, M., *et al.* (2016β€“2024). *"The Impact of Protocol Amendments on Clinical Trial Performance."* **Therapeutic Innovation & Regulatory Science (TIRS)**, 50(4), 436β€“441. [https://pubmed.ncbi.nlm.nih.gov/30227022/](https://pubmed.ncbi.nlm.nih.gov/30227022/).
-   - **Application in Repo:** `compute_tufts_csdd_amendment_risk()` in `pareto_simplifier.py` models substantial amendment probability (`12%β€“94%`), expected direct implementation cost (`$141,000` Phase II to `$535,000` Phase III midpoint = `$338,000`), and expected implementation delay (`260` days).
+   - **Paper:** Getz, K. A., Stergiopoulos, S., Short, M., *et al.* (2016-2024). *"The Impact of Protocol Amendments on Clinical Trial Performance."* **Therapeutic Innovation & Regulatory Science (TIRS)**, 50(4), 436-441. [https://pubmed.ncbi.nlm.nih.gov/30227022/](https://pubmed.ncbi.nlm.nih.gov/30227022/).
+   - **Application in Repo:** `compute_tufts_csdd_amendment_risk()` in `pareto_simplifier.py` models substantial amendment probability (`12%-94%`), expected direct implementation cost (`$141,000` Phase II to `$535,000` Phase III midpoint = `$338,000`), and expected implementation delay (`260` days).
 4. **Competing-Risks Subdistribution Survival Modeling (`Box 5B`):**
-   - **Paper:** Fine, J. P., & Gray, R. J. (1999). *"A Proportional Hazards Model for the Subdistribution of a Competing Risk."* **Journal of the American Statistical Association (JASA)**, 94(446), 496β€“509.
+   - **Paper:** Fine, J. P., & Gray, R. J. (1999). *"A Proportional Hazards Model for the Subdistribution of a Competing Risk."* **Journal of the American Statistical Association (JASA)**, 94(446), 496-509.
    - **Application in Repo:** `run_competing_risks_simulation()` in `survival_sim.py` decomposes trial attrition at each discrete visit week $w_k$ into two competing absorbing events: **Modifiable Burden Dropout** ($p_{i,k}^{(B)}$) and **Unavoidable Adverse Event / Toxicity Dropout** ($p_k^{(AE)}$).
 5. **Aggregate Analysis of ClinicalTrials.gov (`AACT`) Participant Flow Schema (`Box 5A` & Validators):**
    - **Paper:** Tasneem, A., Aberle, L., Ananth, H., Califf, R. M., *et al.* (2012). *"The Database for Aggregate Analysis of ClinicalTrials.gov (AACT) and Subsequent Regrouping by Clinical Specialty."* **PLOS ONE**, 7(3), e33677.
@@ -78,126 +78,77 @@ Every mathematical equation, burden weight, and macro-calibration prior in `Tria
    - Rather than hallucinating on unparseable PDFs, Box 2 computes an explicit structural readiness audit (`Tier A >= 75.0`, `Tier B < 75.0`, `Tier C Selective Abstention`) and routes unverified schedules to an interactive clinician editor.
 2. **Two-Tier Self-Learning Tri-Standard Ontology Normalizer (`CENT-Local` in `Box 3`):**
    - Maps raw clinical procedure strings across **26 languages** to **15 canonical Biomedical Concepts** (`1,051` curated synonyms) bound to **CDISC NCIt**, **LOINC v2.78**, **SNOMED-CT**, and **ICH M11** categories.
-   - Any unseen procedure failing Tier-1 lexical matching triggers a constrained zero-shot local LLM classifier (`_classify_unmapped_procedure_with_llm` via `qwen2.5:7b-instruct`) that permanently caches learned mappings in `learned_concept_synonyms_cache.json`β€”achieving a **`0.07%` default fallback rate across 59 simulated real trials** (`58 / 59` trials at `0.00%` fallback).
+   - Any unseen procedure failing Tier-1 lexical matching triggers a constrained zero-shot local LLM classifier (`_classify_unmapped_procedure_with_llm` via `qwen2.5:7b-instruct`) that permanently caches learned mappings in `learned_concept_synonyms_cache.json` -- achieving a **`0.07%` default fallback rate across 59 simulated real trials** (`58 / 59` trials at `0.00%` fallback).
 3. **Log-Subadditive Intra-Concept Assessment Stacking (`Box 4`):**
    - Captures the cumulative fatigue of stacking multiple blood panels or multiple psychiatric questionnaires within the same visit week via $L_{\text{stack}}(w) = \sum_{c} [1 + 0.35 \ln(m_{w,c})]$, while tracking both unique concept count (`procedure_count`) and raw stacked row count (`raw_procedure_count`).
 4. **Universal Continuous Competing-Risks Survival Law (`Box 5`):**
    - Replaces brittle disease-named `if/elif` rules with `compute_universal_effective_domain_shift()`, a continuous mathematical function of domain log-odds shift ($\Delta_d$), total visits ($K$), peak single-visit procedure density ($M_{\text{raw}}$), and peak biophysical pain ($P_{\max}$).
 5. **Visit-Preserving Counterfactual Pareto Optimizer & Case-Based Vector Knowledge Base (`Box 6`):**
    - Applies 3 regulatory-safe **ICH E6(R3)** simplification levers while guaranteeing `week_proc_counts[wk] > 1` so simplifying a protocol never deletes a scheduled calendar visit.
-   - Includes a zero-VRAM **Vector-Similarity Knowledge Base (`retrieve_nearest_kb_precedents`)** that queries all 60 verified `ClinicalTrials.gov` protocols in log-structural space $[\text{domain\_match}, \ln(1+K), \ln(1+P)]$ to display the Top-5 closest real-world trial precedents alongside every simulation.
+   - Includes a zero-VRAM **Vector-Similarity Knowledge Base (`retrieve_nearest_kb_precedents`)** that queries all 60 verified `ClinicalTrials.gov` protocols in log-structural space `$[\text{DomainMatch}, \ln(1+K), \ln(1+P)]$` to display the Top-5 closest real-world trial precedents alongside every simulation.
 
 ---
 
-## 6-Box System Architecture & Data Flow
+## 6-Box System Architecture & Data Flow (Mermaid Diagrams)
 
-```text
-========================================================================================================================
-                TRIAL-FRICTION-SIM: COMPLETE 6-BOX SYSTEM ARCHITECTURE & DATA FLOW (v3.1 β€” 2026)
-========================================================================================================================
+### 1. End-to-End 6-Box Pipeline Architecture
 
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚                                  INPUT LAYER: REAL CLINICAL PROTOCOL DOCUMENTS                                   β”‚
-  β”‚  β€Ά Live API Stream : ClinicalTrials.gov REST API v2 (`ProvidedDocs` Sponsor PDFs + Period-Matched Flow Results)  β”‚
-  β”‚  β€Ά Local Workspace : `./workspace/protocols_pdf/` (2-page to 483-page Sponsor Protocol PDFs)                     β”‚
-  β”‚  β€Ά Empirical Scale : Validated on 60 Real Completed Protocols (2.60% Combined MAE | 2.50% Median | 3.08% RMSE)   β”‚
-  β”‚                      - Development Cohort (N=40) : 2.47% MAE | 2.87% RMSE | 0.00% Fallback | 0/67 Audit Flags    β”‚
-  β”‚                      - Blind Holdout (N=20)      : 2.88% MAE | 2.24% Median | 2.85% Tier A MAE (+1 Tier C Gate)  β”‚
-  β”‚                      + 38,302 Historical Trials (TrialBench / AACT Parquet) + 26 Global & EU Languages           β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ BOX 1: CONTIGUOUS CLUSTER PAGE SIEVE & SYNOPSIS READER (`box1_page_sieve/sieve.py` β€” CPU | 0.0 GB VRAM)          β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  1. Fast Page Scorer (`score_pdf_page`):                                                                         β”‚
-  β”‚     β€Ά Rejects Table of Contents (`"..." > 2`) and pure prose Estimand / Inclusion / Exclusion pages.             β”‚
-  β”‚     β€Ά Scans for `EXTENDED_SOA_HEADERS` ("schedule of activities", "study calendar", "assessment schedule").      β”‚
-  β”‚     β€Ά Counts `TIME_HEADER_PATTERN` tokens (Week, Day, Cycle, Visit, Month, Screening, Baseline, EOS/EOT).        β”‚
-  β”‚     β€Ά Counts standalone checkmarks (`X, β“, β”, β€Ά`) and tests `page.find_tables()` for ruled grids (+65.0 pts).   β”‚
-  β”‚  2. Front-Matter Synopsis Extractor (`extract_protocol_synopsis_and_title_text`):                                β”‚
-  β”‚     β€Ά Reads Pages 1β€“3 (`front_matter_synopsis_text`) so raw user-uploaded PDFs without API metadata still have   β”‚
-  β”‚       their disease indication and study phase auto-detected.                                                    β”‚
-  β”‚  3. Contiguous Cluster Isolator & Backtracking Memory (`run_page_sieve`):                                        β”‚
-  β”‚     β€Ά Groups candidate pages into contiguous clusters (1 to 6 consecutive pages).                                β”‚
-  β”‚     β€Ά Supports `excluded_pages_0based` so Box 2 can backtrack to Cluster #2 if Cluster #1 fails validation.      β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ BOX 2: SELF-HEALING TRI-MODAL EXTRACTOR & EPOCH FUSION (`box2_table_extractor/extractor.py`)                     β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  β”β”€β”€β–Ί [MULTI-CLUSTER TOURNAMENT LOOP: Evaluates up to `MAX_PAGE_CLUSTERS = 2` Disjoint Page Clusters] β”€β”€β”€β”€β”€β”€β”€β”€β”  β”‚
-  β”‚  β”‚                                                                                                            β”‚  β”‚
-  β”‚  β”‚  β–Ί PATH A: Deterministic Ruled Vector Grid Parser (`_deterministic_grid_to_json` | 0.0 GB VRAM | n=34)     β”‚  β”‚
-  β”‚  β”‚    β€Ά Extracts PyMuPDF vector tables (`find_tables`); carries headers across multi-page continuations.      β”‚  β”‚
-  β”‚  β”‚    β€Ά Multi-Cluster Split-Epoch Fusion (`_is_epoch_complete_schedule` & `_fuse_split_epoch_clusters`):      β”‚  β”‚
-  β”‚  β”‚      If Cluster #1 is a valid pre-treatment/screening sub-table (<4 visits), inspects Cluster #2 via       β”‚  β”‚
-  β”‚  β”‚      0-VRAM Path A and fuses adjacent Screening + Treatment tables into a unified longitudinal schedule.   β”‚  β”‚
-  β”‚  β”‚      β”β”€β”€β–Ί EPOCH-COMPLETE : Breaks loop immediately (`PATH_A_RULED_VECTOR_GRID` β€” 2.36% Dev / 2.99% Hold).  β”‚  β”‚
-  β”‚  β”‚      β””β”€β”€β–Ί FAIL           : Saves candidate and triggers PATH B on current cluster's PNG images β”€β”€β–Ί         β”‚  β”‚
-  β”‚  β”‚                                                                                                            β”‚  β”‚
-  β”‚  β”‚  β–Ί PATH B: Local VLM Visual Image-to-Table OCR (`extract_table_from_image_with_vlm` | 3.4 GB VRAM | n=23)  β”‚  β”‚
-  β”‚  β”‚    β€Ά Loads `qwen3.5:4b` in GPU Airlock Slot 1 (`think=False`, `seed=42`, SHA256-cached in `temp_cache`).   β”‚  β”‚
-  β”‚  β”‚    β€Ά Self-Healing JSON Recovery (`_repair_truncated_json` via `JSONDecoder.raw_decode`).                   β”‚  β”‚
-  β”‚  β”‚    β€Ά Immediately unloads `qwen3.5:4b` from 8 GB VRAM (`keep_alive=0`).                                     β”‚  β”‚
-  β”‚  β”‚      β”β”€β”€β–Ί PASS : Breaks loop immediately (`PATH_B_VLM_VISUAL_IMAGE_OCR` β€” 2.50% Dev / 2.69% Holdout MAE).  β”‚  β”‚
-  β”‚  β”‚      β””β”€β”€β–Ί FAIL : Adds cluster pages to `excluded_pages` and BACKTRACKS to Box 1 for Cluster #2! β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”  β”‚
-  β”‚  β”‚                                                                                                               β”‚
-  β”‚  β–Ό (If neither Cluster #1 nor Cluster #2 passed Validation Gate)                                                 β”‚
-  β”‚  β–Ί PATH C: Prose Text-to-Table Synthesizer (`synthesize_table_from_prose_text_with_llm` | 4.7 GB VRAM | n=2)     β”‚
-  β”‚    β€Ά Scans top 5 scheduling prose sections (`extract_scheduling_prose_from_pdf`).                                β”‚
-  β”‚    β€Ά Loads `qwen2.5:7b-instruct` in GPU Airlock Slot 2 + Canonicalized Timepoint Lexical Co-Occurrence Fallback. β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ SELECTIVE ABSTENTION GATE & HUMAN-IN-THE-LOOP SCHEDULE EDITOR (Protecting Prospective / Unseen Trials)           β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  β€Ά Tier A (`conf >= 75.0` & `validation_passed`, n=37, 2.62% MAE) -> Green Banner: Autonomous simulation.        β”‚
-  β”‚  β€Ά Tier B (`conf <  75.0` & `validation_passed`, n=22, 2.58% MAE) -> Yellow Banner: Simulates + Schedule Editor. β”‚
-  β”‚  β€Ά Tier C (`validation_passed == False`, n=1 `NCT03065075`)       -> Red Banner (`ABSTAINED_ROUTED_TO_UI`):      β”‚
-  β”‚                                                                      Pauses blind simulation & opens UI Editor.  β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ BOX 3: 26-LANGUAGE TRI-STANDARD USDM v4.1 & CENT-LOCAL NORMALIZER (`box3_usdm_normalizer/normalizer.py`)         β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  1. Stage 3A Timepoint Expander (`parse_and_expand_visit_header`):                                               β”‚
-  β”‚     β€Ά Unpacks Slash-Lists (`18/20/24/28/32/36`), Negative Screening Windows (`-6 to -1`), Week Ranges (`4A`),    β”‚
-  β”‚       Visit Ranges (`4B`), and Multi-Cycle Ranges (`4C`, e.g. `4 to 8 28-day cycles`).                           β”‚
-  β”‚  2. Stage 3B Two-Tier Self-Learning Ontology Mapper (`map_procedure_to_cdisc_concept` + `CENT-Local`):           β”‚
-  β”‚     β€Ά Tier 1: Deterministic lexical matching across 1,051 clinical & 26-language synonyms (`data_local/`).       β”‚
-  β”‚     β€Ά Tier 2: Constrained zero-shot `qwen2.5:7b-instruct` normalizer cached in `learned_concept_synonyms_cache`. β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ BOX 4: 5D TUFTS CSDD BURDEN, STACKING LOAD & SITE COST SCORER (`box4_burden_scorer/scorer.py`)                   β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  β€Ά Computes overlap-adjusted `total_chair_hours`, `effective_pain_0_10`, `fasting_required`,                     β”‚
-  β”‚    `pro_cognitive_mins`, `caregiver_required`, `visit_site_cost_usd`, and Log-Subadditive Intra-Concept          β”‚
-  β”‚    Assessment Stacking Load (`stacked_assessment_load = sum(1 + 0.35*ln(m_c))`).                                 β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ BOX 5: 38,302-TRIAL DUCKDB STREAM & UNIVERSAL SURVIVAL SIMULATOR (`box5_dropout_simulator/`)                     β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  β€Ά Streams baseline hazards from `trialbench_38k_real_dropouts.parquet` (38,302 real completed trials).          β”‚
-  β”‚  β€Ά Simulates 1,000 virtual patient-caregiver dyads on PyTorch tensors via `compute_universal_effective_domain_shift`.β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”¬β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-                                                           β”‚
-                                                           β–Ό
-  β”β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
-  β”‚ BOX 6: VISIT-PRESERVING ICH E6(R3) PARETO SIMPLIFIER, VECTOR KB PRECEDENTS & TUFTS AMENDMENT AUDITOR             β”‚
-  β”‚ β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ β”‚
-  β”‚  β€Ά `pareto_simplifier.py`: Locks Primary/Safety endpoints; applies 3 ICH E6(R3) Levers while guaranteeing        β”‚
-  β”‚    `week_proc_counts[wk] > 1` so pruning never deletes a scheduled calendar visit.                               β”‚
-  β”‚  β€Ά `app_dashboard.py`: Interactive Streamlit Studio with Schedule Editor, Plotly Survival & Time-Toxicity        β”‚
-  β”‚    Charts, Top-5 Nearest ClinicalTrials.gov Precedents (Vector Knowledge Base), and Bilingual (EN/EL) AI Memo.   β”‚
-  β””β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”
+```mermaid
+flowchart TD
+    IN["<b>Input Layer: Clinical Trial Protocol PDFs</b><br/>2-page to 483-page Sponsor PDFs across 26 Languages<br/>Validated on 60 Real ClinicalTrials.gov PDFs (2.60% Combined MAE)"]
+
+    B1["<b>Box 1: Topological Page Sieve & Synopsis Reader</b><br/><code>box1_page_sieve/sieve.py</code> (CPU | 0.0 GB VRAM)<br/>Isolates 1-6 contiguous SoA pages + extracts Pages 1-3 synopsis"]
+
+    B2["<b>Box 2: Self-Healing Tri-Modal Table Extractor</b><br/><code>box2_table_extractor/extractor.py</code><br/>Path A: PyMuPDF Vector Grid + Split-Epoch Multi-Cluster Fusion<br/>Path B: Local qwen3.5:4b VLM Image OCR (3.4 GB VRAM Airlock)<br/>Path C: Local qwen2.5:7b-instruct Prose-to-Table Synthesis"]
+
+    GATE{"<b>3-Tier Epistemic Readiness &<br/>Selective Abstention Gate</b>"}
+
+    TIERA["<b>Tier A (Score >= 75)</b><br/>Autonomous Simulation<br/>(n=37, 2.62% MAE)"]
+    TIERB["<b>Tier B (Score < 75)</b><br/>Simulates + Advises Review<br/>(n=22, 2.58% MAE)"]
+    TIERC["<b>Tier C (Abstained)</b><br/>Pauses Blind Simulation &<br/>Opens UI Schedule Editor"]
+
+    B3["<b>Box 3: Tri-Standard USDM v4.1 & CENT-Local Normalizer</b><br/><code>box3_usdm_normalizer/normalizer.py</code><br/>Expands Weeks/Days/Cycles + Maps 1,051 Synonyms across 26 Languages<br/>to CDISC NCIt, LOINC v2.78, SNOMED-CT & ICH M11 (0.07% Fallback)"]
+
+    B4["<b>Box 4: 5D Burden, Stacking Load & Site Cost Scorer</b><br/><code>box4_burden_scorer/scorer.py</code> (CPU | 0.0 GB VRAM)<br/>Computes Chair Hours, Pain (0-10), Fasting, PRO Mins, Caregiver & Stacking Load"]
+
+    B5["<b>Box 5: 38,302-Trial DuckDB Stream & Survival Simulator</b><br/><code>box5_dropout_simulator/survival_sim.py</code><br/>Streams 38,302 TrialBench/AACT Trials + Simulates 1,000 Virtual Patient-Caregiver Dyads"]
+
+    B6["<b>Box 6: ICH E6(R3) Pareto Optimizer & Streamlit Studio</b><br/><code>box6_optimizer_ui/pareto_simplifier.py</code> & <code>app_dashboard.py</code><br/>Applies 3 Levers, Audits Tufts Amendment Risk ($ USD) & Queries 60-Trial Vector KB"]
+
+    IN --> B1 --> B2 --> GATE
+    GATE -->|Valid Vector Grid| TIERA --> B3
+    GATE -->|VLM / Prose Reconstructed| TIERB --> B3
+    GATE -->|No Valid SoA Grid| TIERC -.->|Clinician Verified| B3
+    B3 --> B4 --> B5 --> B6
+
+    style IN fill:#1e293b,stroke:#334155,color:#f8fafc
+    style B1 fill:#0f172a,stroke:#2563eb,color:#f8fafc
+    style B2 fill:#0f172a,stroke:#2563eb,color:#f8fafc
+    style GATE fill:#312e81,stroke:#6366f1,color:#f8fafc
+    style TIERA fill:#065f46,stroke:#10b981,color:#f8fafc
+    style TIERB fill:#78350f,stroke:#f59e0b,color:#f8fafc
+    style TIERC fill:#7f1d1d,stroke:#ef4444,color:#f8fafc
+    style B3 fill:#0f172a,stroke:#0891b2,color:#f8fafc
+    style B4 fill:#0f172a,stroke:#0891b2,color:#f8fafc
+    style B5 fill:#0f172a,stroke:#7c3aed,color:#f8fafc
+    style B6 fill:#064e3b,stroke:#10b981,color:#f8fafc
+```
+
+### 2. Box 2 Self-Healing Multi-Cluster Tournament & 8 GB VRAM Airlock
+
+```mermaid
+flowchart LR
+    C1["<b>Cluster #1 Pages</b><br/>Isolated by Box 1"] --> PA1["<b>Path A: Vector Grid</b><br/>0.0 GB VRAM | < 2 sec"]
+    PA1 -->|Epoch-Complete >= 4 Visits| DONE["<b>Select Best Candidate</b><br/>Write <code>raw_soa_grid.json</code>"]
+    PA1 -->|Split-Epoch Sub-Table| C2A["<b>Check Cluster #2 (Path A)</b><br/>Fuse Screening + Treatment"]
+    C2A --> DONE
+    PA1 -->|No Vector Table| PB1["<b>Path B: Local VLM OCR</b><br/><code>qwen3.5:4b</code> (3.4 GB VRAM)<br/>+ Immediate VRAM Eviction"]
+    PB1 -->|Passes Gate| DONE
+    PB1 -->|Fails Gate| BT["<b>Backtrack to Cluster #2</b><br/>Exclude Cluster #1 Pages"]
+    BT --> PA2["<b>Cluster #2 Path A / Path B</b>"]
+    PA2 -->|Passes Gate| DONE
+    PA2 -->|Fails Gate| PC["<b>Path C: Prose Synthesis</b><br/><code>qwen2.5:7b-instruct</code> (4.7 GB)<br/>+ Lexical Window Fallback"]
+    PC --> DONE
 ```
 
 ---
@@ -205,25 +156,25 @@ Every mathematical equation, burden weight, and macro-calibration prior in `Tria
 ## Mathematical Formulation (Boxes 4, 5 & 6)
 
 ### 1. Overlap-Adjusted Clinic Chair Time & Biophysical Pain (`Box 4`)
-For each discrete calendar visit week $w$ with deduplicated biomedical concepts $c \in \mathcal{C}_w$ (where each concept has effective chair hours $h_c$, invasiveness $p_c \in [0, 10]$, fasting indicator $f_c \in \{0,1\}$, cognitive minutes $q_c$, caregiver indicator $g_c \in \{0,1\}$, and multiplicity $m_{w,c} \ge 1$):
+For each discrete calendar visit week $w$ with deduplicated biomedical concepts $c \in C_w$ (where each concept has effective chair hours $h_c$, invasiveness $p_c \in [0, 10]$, fasting indicator $f_c \in \{0,1\}$, cognitive minutes $q_c$, caregiver indicator $g_c \in \{0,1\}$, and multiplicity $m_{w,c} \ge 1$):
 
-$$H(w) = h_{\max}(w) + 0.65 \sum_{c \in \mathcal{C}_w \setminus \{c_{\max}\}} h_c, \qquad P(w) = \min\Big(10.0,\; p_{\max}(w) + 0.60 \cdot \max\big(0, |\mathcal{C}_w^{\text{inv}}| - 1\big)\Big)$$
+$$H(w) = h_{\max}(w) + 0.65 \sum_{c \in C_w \setminus \{c_{\max}\}} h_c, \qquad P(w) = \min\Big(10.0,\; p_{\max}(w) + 0.60 \cdot \max\big(0, |C_w^{\text{inv}}| - 1\big)\Big)$$
 
-where $\mathcal{C}_w^{\text{inv}} = \{c \in \mathcal{C}_w : p_c \ge 4.0\}$. The composite **Visit Friction Index** $\text{VFI}(w) \in [0, 100]$ is:
+where $C_w^{\text{inv}} = \{c \in C_w : p_c \ge 4.0\}$. The composite **Visit Friction Index** $\text{VFI}(w) \in [0, 100]$ is:
 
-$$\text{VFI}(w) = \min\!\left(100.0,\; 30 \min\!\left(\frac{H(w)}{8.0}, 1.2\right) + 35 \left(\frac{P(w)}{10.0}\right) + 10\,\mathbb{I}_{\text{fast}}(w) + 10 \min\!\left(\frac{Q(w)}{180}, 1.0\right) + 15\,\mathbb{I}_{\text{care}}(w)\right)$$
+$$\text{VFI}(w) = \min\!\left(100.0,\; 30 \min\!\left(\frac{H(w)}{8.0}, 1.2\right) + 35 \left(\frac{P(w)}{10.0}\right) + 10\,I_{\text{fast}}(w) + 10 \min\!\left(\frac{Q(w)}{180}, 1.0\right) + 15\,I_{\text{care}}(w)\right)$$
 
 ### 2. Competing-Risks Patient-Caregiver Survival Process (`Box 5`)
 For virtual patient $i \in \{1, \dots, N\}$ ($N=1,000$) with age $A_i \sim \mathcal{N}(54, 12^2)_{[22,80]}$, job inflexibility $J_i$, log-normal commute distance $D_i \sim \text{LogNormal}(2.8, 0.75^2)_{[2,120]}$, pain aversion $\alpha_i \sim \text{Gamma}(2.5, 0.45)_{[0.4,2.2]}$, and caregiver availability $G_i \sim \text{Bernoulli}(0.68)$, the visit stress $S_i(w_k)$ and exponentially decaying cumulative fatigue $F_i(w_k)$ at visit $k \in \{1, \dots, K\}$ are:
 
-$$S_i(w_k) = \left(\frac{H(w_k) + T_i(w_k)}{8.5}\right) J_i + \left(\frac{P(w_k)}{10.0}\right)^{1.8} \alpha_i + 0.55(1 - G_i)\mathbb{I}_{\text{care}}(w_k) + 0.12\,\mathbb{I}_{\text{fast}}(w_k)$$
+$$S_i(w_k) = \left(\frac{H(w_k) + T_i(w_k)}{8.5}\right) J_i + \left(\frac{P(w_k)}{10.0}\right)^{1.8} \alpha_i + 0.55(1 - G_i)I_{\text{care}}(w_k) + 0.12\,I_{\text{fast}}(w_k)$$
 
 $$F_i(w_k) = \min\!\Big(2.2,\; F_i(w_{k-1}) \exp\!\big(-0.12 \max(1, w_k - w_{k-1})\big) + 0.22\,S_i(w_k)\Big)$$
 
 At each visit $w_k$, active patient $i$ faces two competing hazard processes:
 1. **Modifiable Burden Dropout Probability** $p_{i,k}^{(B)} = \text{clip}\big(\sigma(\eta_{i,k}),\, 0.0005,\, 0.38\big)$, where:
    $$\eta_{i,k} = -4.85 + \delta_{\text{density}}(K) + \delta_{\text{inpatient}} + \Delta_{\text{eff}}(\Delta_d, K, M_{\text{raw}}, P_{\max}) + 0.58\,S_i(w_k) + 0.24\,F_i(w_k)$$
-2. **Unavoidable Adverse Event (AE) Dropout Probability** $p_k^{(AE)} = 1 - (1 - r_{\text{AE, eff}})^{1/K}$, calibrated from `trialbench_38k_real_dropouts.parquet`.
+2. **Unavoidable Adverse Event (AE) Dropout Probability** $p_k^{(AE)} = 1 - (1 - r_{\text{AE}})^{1/K}$, calibrated from `trialbench_38k_real_dropouts.parquet`.
 
 ---
 
@@ -237,20 +188,20 @@ streamlit run box6_optimizer_ui/app_dashboard.py
 ### What Happens When You Upload a Protocol PDF?
 
 #### 1. Left Sidebar Controls (Input, Cohort & Optimization Levers)
-* **Protocol Input:** Upload any Sponsor Protocol PDF (`Upload Any Protocol PDF β€” 26 Languages Supported`) or select any cached protocol from the dropdown menu.
-* **Clinical Attrition Domain:** Leave on `AUTO_DETECT_FROM_PROTOCOL` (which reads the protocol's front-matter synopsis on Pages 1β€“3 and extracted procedures to classify the trial across 20 therapeutic domains) or manually select a specific domain to run sensitivity analysis.
+* **Protocol Input:** Upload any Sponsor Protocol PDF (`Upload Any Protocol PDF -- 26 Languages Supported`) or select any cached protocol from the dropdown menu.
+* **Clinical Attrition Domain:** Leave on `AUTO_DETECT_FROM_PROTOCOL` (which reads the protocol's front-matter synopsis on Pages 1-3 and extracted procedures to classify the trial across 20 therapeutic domains) or manually select a specific domain to run sensitivity analysis.
 * **Virtual Patient Cohort Size:** Slide between `500` and `5,000` virtual patient-caregiver dyads (`default = 1,000`).
 * **ICH E6(R3) Optimization Levers:** Independently toggle:
   - **Lever 1:** Prune redundant interim exploratory biopsies / lumbar punctures & convert 4.5-hr Serial PK to 1-point Sparse PK.
   - **Lever 2:** Consolidate redundant interim MRIs & duplicate 120-min neurocognitive batteries.
   - **Lever 3:** Decentralize non-anchor routine check-in weeks to Home-Health Nursing / Mobile ePRO (`0 km` hospital commute).
-* **Local AI Memo Settings:** Select `English` or `Greek (Ξ•Ξ»Ξ»Ξ·Ξ½ΞΉΞΊΞ¬)` and check `Generate Executive Memo via Local qwen2.5:7b-instruct` to generate a formal FDA/EMA regulatory justification memo.
+* **Local AI Memo Settings:** Select `English` or `Greek` and check `Generate Executive Memo via Local qwen2.5:7b-instruct` to generate a formal FDA/EMA regulatory justification memo.
 
 #### 2. Top Epistemic Readiness Banner (3-Tier Traffic Light)
 Immediately after extraction, the top banner displays the structural readiness tier of the uploaded PDF:
-* πΆ **Tier A β€” Structurally Validated Schedule (`Score >= 75/100` | `PATH_A_RULED_VECTOR_GRID`):** High-confidence vector table extracted directly from the PDF; displays isolated 1-based page numbers, active visit count, procedure count, and detected clinical domain.
-* π΅ **Tier B β€” Model-Reconstructed / Partial Schedule (`Score < 75/100` | `PATH_B_VLM` or `PATH_C_PROSE`):** Schedule reconstructed via local VLM OCR or prose synthesis; runs the simulation while recommending clinician verification via the expandable schedule editor.
-* π”΄ **Tier C β€” Selective Abstention Triggered (`validation_passed == False`):** Triggered when a PDF contains no machine-verifiable SoA grid (`< 2` visits or `< 3` procedures). Automated blind simulation is paused, and the **Interactive Human-in-the-Loop Schedule Editor** opens automatically.
+* **[Tier A -- Green Banner] Structurally Validated Schedule (`Score >= 75/100` | `PATH_A_RULED_VECTOR_GRID`):** High-confidence vector table extracted directly from the PDF; displays isolated 1-based page numbers, active visit count, procedure count, and detected clinical domain.
+* **[Tier B -- Yellow Banner] Model-Reconstructed / Partial Schedule (`Score < 75/100` | `PATH_B_VLM` or `PATH_C_PROSE`):** Schedule reconstructed via local VLM OCR or prose synthesis; runs the simulation while recommending clinician verification via the expandable schedule editor.
+* **[Tier C -- Red Banner] Selective Abstention Triggered (`validation_passed == False`):** Triggered when a PDF contains no machine-verifiable SoA grid (`< 2` visits or `< 3` procedures). Automated blind simulation is paused, and the **Interactive Human-in-the-Loop Schedule Editor** opens automatically.
 
 #### 3. Interactive Human-in-the-Loop Schedule Editor
 Expanding **"Interactive Human-in-the-Loop Schedule Editor (Add / Edit Visits & Procedures)"** reveals:
@@ -264,18 +215,18 @@ Across the top of the simulation workspace, 6 real-time KPI cards display:
 3. **Modifiable Burden Dropout (`%`):** Percentage of participants lost specifically to logistical/pain friction (excluding unavoidable adverse events) and the reduction achieved vs. baseline.
 4. **Chair Hours Saved / Patient (`hrs`):** Total clinic chair hours eliminated per patient across the study timeline and total count of SoA modifications.
 5. **Tufts Amendment Risk (`%`):** Predicted probability of requiring a substantial protocol amendment and the expected direct financial cost avoided (`$ USD`).
-6. **Extraction Readiness Score (`0β€“100`):** Structural extraction score and active Box 2 extraction path.
+6. **Extraction Readiness Score (`0-100`):** Structural extraction score and active Box 2 extraction path.
 
 #### 5. Dual Interactive Plotly Visualizations
-* **Left Chart β€” Cohort Retention Curve (Baseline vs. Pareto-Optimized Protocol):** Plots week-by-week retained cohort percentage (`%`) for the original schedule (red curve) vs. the ICH E6(R3) optimized schedule (green curve) against the dashed orange **80% Minimum Statistical Power Threshold**.
-* **Right Chart β€” Clinic Chair Hours per Visit (Time Toxicity Bar Chart):** Grouped bar chart comparing baseline vs. optimized clinic chair hours (`hrs`) at every scheduled visit week, visually pinpointing multi-procedure "dropout shock" weeks.
+* **Left Chart -- Cohort Retention Curve (Baseline vs. Pareto-Optimized Protocol):** Plots week-by-week retained cohort percentage (`%`) for the original schedule (red curve) vs. the ICH E6(R3) optimized schedule (green curve) against the dashed orange **80% Minimum Statistical Power Threshold**.
+* **Right Chart -- Clinic Chair Hours per Visit (Time Toxicity Bar Chart):** Grouped bar chart comparing baseline vs. optimized clinic chair hours (`hrs`) at every scheduled visit week, visually pinpointing multi-procedure "dropout shock" weeks.
 
 #### 6. Four Deep-Dive Audit & Regulatory Tabs
 * **Tab 1 (`ICH E6(R3) Protocol Simplifications Log`):** Filterable table of every schedule modification (`week`, `lever`, `procedure [canonical concept]`, `action`, and `ich_e6_r3_principle`).
-* **Tab 2 (`Visit-by-Visit Simulation Table β€” Before vs. After`):** Side-by-side weekly tables showing `week`, `visit_name`, `total_chair_hours`, `effective_pain_0_10`, `new_burden_dropouts`, and `retention_pct`.
+* **Tab 2 (`Visit-by-Visit Simulation Table -- Before vs. After`):** Side-by-side weekly tables showing `week`, `visit_name`, `total_chair_hours`, `effective_pain_0_10`, `new_burden_dropouts`, and `retention_pct`.
 * **Tab 3 (`Executive Regulatory Justification Memo`):** Displays the generated FDA & EMA ICH E6(R3) Executive Redesign Memo in English or Greek.
 * **Tab 4 (`Knowledge Base Precedents & 60-Trial Validation Benchmark`):**
-  1. **Top-5 Nearest Real-World `ClinicalTrials.gov` Precedents:** Queries the 60-trial Vector Knowledge Base in log-structural space $[\text{domain\_match}, \ln(1+K), \ln(1+P)]$ to display the 5 most structurally similar completed trials on `ClinicalTrials.gov` alongside their actual vs. simulated retention and vector similarity (`%`).
+  1. **Top-5 Nearest Real-World `ClinicalTrials.gov` Precedents:** Queries the 60-trial Vector Knowledge Base in log-structural space `$[\text{DomainMatch}, \ln(1+K), \ln(1+P)]$` to display the 5 most structurally similar completed trials on `ClinicalTrials.gov` alongside their actual vs. simulated retention and vector similarity (`%`).
   2. **Verified 60-Trial Real-World Validation Scorecard:** Summary table across the 40-trial calibration cohort, 20-trial blind holdout cohort, and combined 60-trial benchmark.
   3. **Box 2 Multi-Cluster Extraction Attempts & Validation Gate Audit:** Full provenance log of every cluster and extraction path attempted on the PDF.
   4. **Tier 1 Macro Calibration Table:** Live DuckDB summary across all `38,302` real clinical trials in `trialbench_38k_real_dropouts.parquet`.
@@ -286,12 +237,12 @@ Across the top of the simulation workspace, 6 real-time KPI cards display:
 
 ### Summary Scorecard (40 Calibration + 20 Blind Holdout = 60 Real Trials)
 
-| Validation Cohort (`ClinicalTrials.gov` Sponsor PDFs) | Protocols Tested | Simulated (`Tier A + B`) | Mean Abs Error (`MAE %`) | Std Dev (`%`) | Median Error (`%`) | Min / Max Error (`%`) | RMSE (`%`) | Default Fallback (`%`) | Trials $\le 6.0\%$ Error |
+| Validation Cohort (`ClinicalTrials.gov` Sponsor PDFs) | Protocols Tested | Simulated (`Tier A + B`) | Mean Abs Error (`MAE %`) | Std Dev (`%`) | Median Error (`%`) | Min / Max Error (`%`) | RMSE (`%`) | Default Fallback (`%`) | Trials <= 6.0% Error |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **1. Development & Calibration Cohort (`N = 40`)** | `40` | `40 / 40` | **`2.47%`** | `1.48%` | **`2.51%`** | `0.06%` / `5.63%` | **`2.87%`** | **`0.00%`** | **`40 / 40` (`100.0%`)** |
-| **2. Blind Holdout β€” Tier A (`conf >= 75.0`)** | `13` | `13 / 13` | **`2.85%`** | `1.87%` | **`2.51%`** | `0.01%` / `5.76%` | **`3.34%`** | `0.33%` | **`13 / 13` (`100.0%`)** |
-| **3. Blind Holdout β€” Tier B (`conf < 75.0`)** | `6` | `6 / 6` | **`2.94%`** | `2.42%` | **`1.87%`** | `0.96%` / `7.03%` | **`3.65%`** | **`0.00%`** | `5 / 6` (`83.3%`) |
-| **4. Blind Holdout β€” All (`19` Sim + `1` Tier C)** | `20` | `19 / 20` (+`1` Tier C) | **`2.88%`** | `1.99%` | **`2.24%`** | `0.01%` / `7.03%` | **`3.47%`** | **`0.23%`** | **`18 / 19` (`94.7%`)** |
+| **2. Blind Holdout -- Tier A (`conf >= 75.0`)** | `13` | `13 / 13` | **`2.85%`** | `1.87%` | **`2.51%`** | `0.01%` / `5.76%` | **`3.34%`** | `0.33%` | **`13 / 13` (`100.0%`)** |
+| **3. Blind Holdout -- Tier B (`conf < 75.0`)** | `6` | `6 / 6` | **`2.94%`** | `2.42%` | **`1.87%`** | `0.96%` / `7.03%` | **`3.65%`** | **`0.00%`** | `5 / 6` (`83.3%`) |
+| **4. Blind Holdout -- All (`19` Sim + `1` Tier C)** | `20` | `19 / 20` (+`1` Tier C) | **`2.88%`** | `1.99%` | **`2.24%`** | `0.01%` / `7.03%` | **`3.47%`** | **`0.23%`** | **`18 / 19` (`94.7%`)** |
 | **5. Combined 60-Trial Benchmark (`N = 60`)** | **`60`** | **`59 / 60`** (+`1` Tier C) | **`2.60%`** | **`1.65%`** | **`2.50%`** | **`0.01%` / `7.03%`** | **`3.08%`** | **`0.07%`** | **`58 / 59` (`98.3%`)** |
 
 ---
@@ -306,7 +257,7 @@ Executed via `box5_dropout_simulator/aact_duckdb_loader.py` on `trialbench_38k_r
 | **Phase 2** | `15,770` | `25.57%` | `11.11%` | `34.00%` |
 | **Phase 3** | `11,461` | `23.72%` | `12.41%` | `29.35%` |
 | **Phase 4** | `6,867` | `15.51%` | `7.69%` | `20.88%` |
-| **Total / Weighted** | **`38,302`** | **`22.40%`** | β€” | β€” |
+| **Total / Weighted** | **`38,302`** | **`22.40%`** | -- | -- |
 
 ---
 
@@ -374,7 +325,7 @@ Reproducible via `python blind_holdout_validator.py`:
 | 07 | `NCT01570387` | AL Amyloidosis | `ENDOCRINE_DIABETES` | `PATH_A_VECTOR` | `85.5` | `5` | `23` | `88.89%` | `88.9%` | **`0.01%`** | `89.6%` | `9.93` |
 | 08 | `NCT04399837` | Generalized Pustular Psor | `AUTOIMMUNE_DERMATOLOGY` | `PATH_A_VECTOR` | `96.0` | `16` | `21` | `90.24%` | `85.7%` | **`4.54%`** | `88.5%` | `18.93` |
 | 09 | `NCT03385239` | Hypertriglyceridemia | `ENDOCRINE_DIABETES` | `PATH_A_VECTOR` | `96.0` | `17` | `23` | `89.47%` | `91.4%` | **`1.93%`** | `92.4%` | `13.27` |
-| 10 | `NCT03065075` | Urinary Retention Post-Op | `SELECTIVE_ABSTENTION` | `TIER_C_ABSTAIN` | `0.0` | `0` | `0` | `100.00%` | *Abstained* | *Routed UI* | *Abstained* | β€” |
+| 10 | `NCT03065075` | Urinary Retention Post-Op | `SELECTIVE_ABSTENTION` | `TIER_C_ABSTAIN` | `0.0` | `0` | `0` | `100.00%` | *Abstained* | *Routed UI* | *Abstained* | -- |
 | 11 | `NCT03296553` | Kaposi Sarcoma | `OPHTHALMOLOGY_TOPICAL` | `PATH_B_VLM_OCR` | `75.8` | `9` | `22` | `92.50%` | `93.7%` | **`1.20%`** | `93.9%` | `1.55` |
 | 12 | `NCT01987895` | Clostridium Difficile Inf | `AUTOIMMUNE_DERMATOLOGY` | `PATH_A_VECTOR` | `83.7` | `6` | `17` | `90.51%` | `88.0%` | **`2.51%`** | `89.6%` | `5.05` |
 | 13 | `NCT01857934` | Neuroblastoma | `SOLID_TUMOR_ONCOLOGY` | `PATH_B_VLM_OCR` | `72.0` | `4` | `34` | `84.38%` | `83.2%` | **`1.18%`** | `85.7%` | `4.19` |
@@ -395,7 +346,7 @@ Validated across **26 languages** (`EL_GREEK`, `DE_GERMAN`, `FR_FRENCH`, `ES_SPA
 - **Extracted Procedures:** `10 / 10` (`100%` across all 26 languages)
 - **Expanded Calendar Visits:** `9 / 9` (`Weeks [-2, 1, 4, 8, 12, 16, 20, 24, 52]`)
 - **Default Concept Fallback Rate:** `0.00%` across all 26 languages
-- **Simulated Retention & Optimization Parity:** Identical `74.8%` Baseline $\rightarrow$ `85.1%` Optimized (`+10.3%` retention rescued, `30.15` clinic chair hours saved/patient) across all 26 languages.
+- **Simulated Retention & Optimization Parity:** Identical `74.8%` Baseline -> `85.1%` Optimized (`+10.3%` retention rescued, `30.15` clinic chair hours saved/patient) across all 26 languages.
 
 ---
 
@@ -413,13 +364,13 @@ Validated across **26 languages** (`EL_GREEK`, `DE_GERMAN`, `FR_FRENCH`, `ES_SPA
 
 ---
 
-## Regulatory Alignment (US FDA & EU EMA 2025β€“2026)
+## Regulatory Alignment (US FDA & EU EMA 2025-2026)
 
 | Regulatory / Data Standard | Governing Body | Implementation in `Trial-Friction-Sim` |
 | :--- | :--- | :--- |
-| **ICH E6(R3) Good Clinical Practice (Section 3: Quality by Design)** | US FDA & EU EMA (2025β€“2026) | Quantifies participant time toxicity and biophysical burden per visit; tests proportionality levers in `pareto_simplifier.py`. |
+| **ICH E6(R3) Good Clinical Practice (Section 3: Quality by Design)** | US FDA & EU EMA (2025-2026) | Quantifies participant time toxicity and biophysical burden per visit; tests proportionality levers in `pareto_simplifier.py`. |
 | **ICH M11 CeSHarP (Clinical Electronic Structured Harmonised Protocol)** | US FDA (May 2026) & EU EMA (June 2026) | Tags every normalized procedure with `ich_m11_category` and structures epochs (`SCREENING_EPOCH`, `BASELINE_EPOCH`, `TREATMENT_EPOCH`, `FOLLOW_UP_EPOCH`). |
-| **CDISC USDM v4.1 (Unified Study Definitions Model β€” DDF SoA)** | CDISC & TransCelerate | Outputs `clean_usdm_schedule.json` with ISO-8601 durations (`planned_duration_iso8601`), study days, weeks, and biomedical concepts. |
+| **CDISC USDM v4.1 (Unified Study Definitions Model -- DDF SoA)** | CDISC & TransCelerate | Outputs `clean_usdm_schedule.json` with ISO-8601 durations (`planned_duration_iso8601`), study days, weeks, and biomedical concepts. |
 | **CDISC NCIt + LOINC v2.78 + SNOMED-CT** | US FDA & EU EHDS / EMA CTIS | Binds all 15 canonical concepts (`1,051` synonyms) to exact `cdisc_code`, `loinc_code`, and `snomed_code` identifiers. |
 
 ---
@@ -428,32 +379,33 @@ Validated across **26 languages** (`EL_GREEK`, `DE_GERMAN`, `FR_FRENCH`, `ES_SPA
 
 ```text
 Trial-Friction-Sim/
-β”β”€β”€ config/
-β”‚   β””β”€β”€ settings.py                        # Portable workspace routing & 8GB VRAM GPU Airlock (unload_ollama_model)
-β”β”€β”€ data_local/
-β”‚   β”β”€β”€ procedure_burden_dict.json         # 15 Canonical Biomedical Concepts (1,051 synonyms across 26 languages)
-β”‚   β”β”€β”€ ALL_PROTOCOLS_DEEP_FORENSIC_AUDIT.json
-β”‚   β””β”€β”€ BLIND_10_TRIAL_HOLDOUT_BENCHMARK.json
-β”β”€β”€ box1_page_sieve/
-β”‚   β””β”€β”€ sieve.py                           # Box 1: 0-VRAM topological SoA page cluster isolator & synopsis reader
-β”β”€β”€ box2_table_extractor/
-β”‚   β””β”€β”€ extractor.py                       # Box 2: Self-healing Path A/B/C extractor, epoch fusion & 3-tier auditor
-β”β”€β”€ box3_usdm_normalizer/
-β”‚   β””β”€β”€ normalizer.py                      # Box 3: Timepoint expander & two-tier CENT-Local CDISC/LOINC/SNOMED mapper
-β”β”€β”€ box4_burden_scorer/
-β”‚   β””β”€β”€ scorer.py                          # Box 4: 5D burden scorer, log-subadditive stacking & site cost estimator
-β”β”€β”€ box5_dropout_simulator/
-β”‚   β”β”€β”€ aact_duckdb_loader.py              # Box 5A: 38,302-trial DuckDB stream & negation-safe domain classifier
-β”‚   β””β”€β”€ survival_sim.py                    # Box 5B: 1,000-patient PyTorch competing-risks survival simulator
-β”β”€β”€ box6_optimizer_ui/
-β”‚   β”β”€β”€ pareto_simplifier.py               # Box 6A: Visit-preserving ICH E6(R3) Pareto optimizer & Tufts CSDD auditor
-β”‚   β””β”€β”€ app_dashboard.py                   # Box 6B: Streamlit studio, schedule editor & vector KB precedent search
-β”β”€β”€ real_data_validator.py                 # Reproducible 38,302-trial macro + 40-trial real PDF + 26-lang benchmark
-β”β”€β”€ blind_holdout_validator.py             # Reproducible 20-trial out-of-sample blind holdout benchmark
-β”β”€β”€ forensic_folder_auditor.py             # Deep forensic folder auditor verifying 0/67 flags across cached protocols
-β”β”€β”€ requirements.txt
-β”β”€β”€ The Full Architecture in Simple Boxes & Arrows.md
-β””β”€β”€ README.md
++-- config/
+|   +-- settings.py                        # Portable workspace routing & 8GB VRAM GPU Airlock (unload_ollama_model)
++-- data_local/
+|   +-- procedure_burden_dict.json         # 15 Canonical Biomedical Concepts (1,051 synonyms across 26 languages)
+|   +-- ALL_PROTOCOLS_DEEP_FORENSIC_AUDIT.json
+|   +-- BLIND_10_TRIAL_HOLDOUT_BENCHMARK.json
++-- box1_page_sieve/
+|   +-- sieve.py                           # Box 1: 0-VRAM topological SoA page cluster isolator & synopsis reader
++-- box2_table_extractor/
+|   +-- extractor.py                       # Box 2: Self-healing Path A/B/C extractor, epoch fusion & 3-tier auditor
++-- box3_usdm_normalizer/
+|   +-- normalizer.py                      # Box 3: Timepoint expander & two-tier CENT-Local CDISC/LOINC/SNOMED mapper
++-- box4_burden_scorer/
+|   +-- scorer.py                          # Box 4: 5D burden scorer, log-subadditive stacking & site cost estimator
++-- box5_dropout_simulator/
+|   +-- aact_duckdb_loader.py              # Box 5A: 38,302-trial DuckDB stream & negation-safe domain classifier
+|   +-- survival_sim.py                    # Box 5B: 1,000-patient PyTorch competing-risks survival simulator
++-- box6_optimizer_ui/
+|   +-- pareto_simplifier.py               # Box 6A: Visit-preserving ICH E6(R3) Pareto optimizer & Tufts CSDD auditor
+|   +-- app_dashboard.py                   # Box 6B: Streamlit studio, schedule editor & vector KB precedent search
++-- real_data_validator.py                 # Reproducible 38,302-trial macro + 40-trial real PDF + 26-lang benchmark
++-- blind_holdout_validator.py             # Reproducible 20-trial out-of-sample blind holdout benchmark
++-- forensic_folder_auditor.py             # Deep forensic folder auditor verifying 0/67 flags across cached protocols
++-- requirements.txt
++-- LICENSE
++-- The Full Architecture in Simple Boxes & Arrows.md
++-- README.md
 ```
 
 ---
@@ -461,7 +413,7 @@ Trial-Friction-Sim/
 ## Installation, Hardware Requirements & Quickstart
 
 ### Hardware Discipline & 8 GB VRAM GPU Airlock
-- **CPU / RAM:** Standard 4+ core CPU, 16β€“32 GB RAM.
+- **CPU / RAM:** Standard 4+ core CPU, 16-32 GB RAM.
 - **GPU (Optional / Local Airlock):** Designed for an **8 GB VRAM** local GPU running [Ollama](https://ollama.com/). Boxes 1, 3 (Tier 1), 4, and 5 use **`0.0 GB` VRAM**. When Box 2 (`Path B` / `Path C`) or Box 6 loads `qwen3.5:4b` (`~3.4 GB`) or `qwen2.5:7b-instruct` (`~4.7 GB`), `unload_ollama_model()` immediately evicts weights via `keep_alive=0` so two models never coexist in VRAM.
 
 ### 1. Environment Setup
