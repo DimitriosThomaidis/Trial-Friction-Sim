@@ -6,6 +6,7 @@
 [![Real-World Benchmark](https://img.shields.io/badge/Validated_Cohort-60_Real_ClinicalTrials.gov_PDFs_(2.60%25_MAE)-d97706.svg)](#empirical-validation--60-trial-real-world-benchmark)
 [![Macro Calibration](https://img.shields.io/badge/Macro_Calibration-38%2C302_Real_Trials_(DuckDB)-0891b2.svg)](#tier-1-macro-calibration-on-38302-historical-trials)
 [![Multilingual Parity](https://img.shields.io/badge/Multilingual-26_US_%2F_EU_%2F_Global_Languages-dc2626.svg)](#tier-4-26-language-useuglobal-stress-test-100-parity)
+[![DOI](https://zenodo.org/badge/1440693716.svg)](https://doi.org/10.5281/zenodo.24305957)
 
 **Trial-Friction-Sim** is a 100% local, privacy-preserving, 6-box clinical trial protocol intelligence and competing-risks patient retention simulator engineered to run within an **8 GB VRAM consumer GPU envelope**. Given any raw Sponsor Protocol PDF (from 2-page summaries to 483-page multi-epoch Phase III documents), the pipeline:
 
