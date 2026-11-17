@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Trial-Friction-Sim in your clinical trial protocol design, ICH E6(R3) burden modeling, or CDISC USDM research, please cite it as below."
+authors:
+  - family-names: "Thomaidis"
+    given-names: "Dimitrios"
+title: "Trial-Friction-Sim: Local 8GB-VRAM Clinical Trial Schedule of Assessments (SoA) Burden Extractor, Competing-Risks Patient Dropout Simulator & ICH E6(R3) / CDISC USDM v4.1 Optimizer"
+version: 3.1.0
+date-released: 2026-11-01
+url: "https://github.com/DimitriosThomaidis/Trial-Friction-Sim"
+repository-code: "https://github.com/DimitriosThomaidis/Trial-Friction-Sim"
+keywords:
+  - "clinical-trials"
+  - "cdisc-usdm"
+  - "ich-e6-r3"
+  - "ich-m11"
+  - "survival-analysis"
+  - "competing-risks"
+  - "loinc"
+  - "snomed-ct"
+license: MIT
